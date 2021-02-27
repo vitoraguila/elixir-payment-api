@@ -1,8 +1,14 @@
 defmodule PaymentsApiWeb.Router do
   use PaymentsApiWeb, :router
 
+  import Plug.BasicAuth
+
   pipeline :api do
     plug :accepts, ["json"]
+  end
+
+  pipeline :auth do
+    plug :basic_auth, Application.compile_env(:paymentsApi, :basic_auth)
   end
 
   scope "/api", PaymentsApiWeb do
@@ -11,6 +17,10 @@ defmodule PaymentsApiWeb.Router do
     get "/:filename", WelcomeController, :index
 
     post "/users", UsersController, :create
+  end
+
+  scope "/api", PaymentsApiWeb do
+    pipe_through [:api, :auth]
 
     post "/accounts/:id/deposit", AccountsController, :deposit
     post "/accounts/:id/withdraw", AccountsController, :withdraw
